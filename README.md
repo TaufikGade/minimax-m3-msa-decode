@@ -62,15 +62,24 @@ See [the task statement](docs/TASK.md) and
 
 ## Initial workflow
 
-1. Run scripts/collect_env.ps1 and archive the manifest with the raw data.
-2. Implement and validate the FP32 reference before performance measurement.
-3. Dry-run every command before reserving B300 time.
-4. Measure run-to-run noise before claiming a speedup.
-5. Use only same-machine B300 measurements in primary comparison figures.
+1. Create the repository-local environment:
 
-PyTorch, Triton, vLLM, and CUTLASS must be installed for the target CUDA
-environment. They are intentionally not installed automatically because their
-versions depend on the B300 cluster image.
+   ~~~bash
+   uv venv .venv \
+     --python ~/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/bin/python3.12
+   source .venv/bin/activate
+   uv pip install -r requirements-b300.txt
+   ~~~
+
+2. Run scripts/collect_env.ps1 and archive the manifest with the raw data.
+3. Implement and validate the FP32 reference before performance measurement.
+4. Dry-run every command before reserving B300 time.
+5. Measure run-to-run noise before claiming a speedup.
+6. Use only same-machine B300 measurements in primary comparison figures.
+
+The verified B300 environment uses Python 3.12.13, PyTorch 2.11.0+cu130,
+Triton 3.6.0, and NumPy 2.5.2. The standalone baseline does not require a full
+vLLM installation.
 
 ## License
 

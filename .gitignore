@@ -29,3 +29,6 @@ tmp/
 Thumbs.db
 results/raw/*
 !results/raw/README.md
+!results/raw/*.csv
+!results/raw/*.json
+!results/raw/environment.txt

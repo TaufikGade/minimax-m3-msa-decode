@@ -6,3 +6,9 @@ warm-up control, and preallocated workspaces.
 
 Primary results must distinguish eager launch, CUDA Graph replay, partial
 kernel time, merge time, and metadata overhead.
+
+Current entry points:
+
+- bench_decode.py: upstream-heuristic eager and CUDA Graph baseline.
+- bench_split_sweep.py: correctness-checked partial/merge decomposition and
+  power-of-two split-count sweep.
