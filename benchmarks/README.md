@@ -12,3 +12,6 @@ Current entry points:
 - bench_decode.py: upstream-heuristic eager and CUDA Graph baseline.
 - bench_split_sweep.py: correctness-checked partial/merge decomposition and
   power-of-two split-count sweep.
+- profile_decode_kernel.py: validate and warm up one fixed shape, then launch
+  only the selected partial or merge kernel inside a CUDA profiler range. Use
+  it with `ncu --profile-from-start off` so setup and warm-up are not captured.
