@@ -1,0 +1,15 @@
+commit=1410e42aaeac32704696d1ea8522f6d1b37102c9
+baseline_commit=617aa6870d5482c284d25282adc8c2ab3476d263
+job=11908_0
+case=tp4,batch=1,chunks=16,kernel=partial,scale_mode=scalar
+name, uuid, driver_version, temperature.gpu, clocks.current.sm [MHz], power.draw [W]
+NVIDIA B300 SXM6 AC, GPU-0c223cf1-4325-822f-1e38-43ae57897edd, 580.126.09, 36, 2032 MHz, 258.30 W
+NVIDIA (R) Nsight Compute Command Line Profiler
+Copyright (c) 2018-2025 NVIDIA Corporation
+Version 2025.3.1.0 (build 36398880) (public-release)
+==PROF== Connected to process 890812 (/home/lcpu/75132004/.local/share/uv/python/cpython-3.12.13-linux-x86_64-gnu/bin/python3.12)
+{"batch": 1, "chunks": 16, "compute_capability": [10, 3], "cosine_similarity": 0.9999946355819702, "gpu": "NVIDIA B300 SXM6 AC", "kernel": "partial", "kv_dtype": "torch.float8_e4m3fn", "max_abs_error": 0.00048828125, "num_heads": 16, "num_kv_heads": 1, "page_layout": "random", "profile_launches": 1, "scale_mode": "scalar", "seed": 20260829, "use_pdl": true, "warmup": 20}
+==PROF== Profiling "_gqa_sparse_decode_kernel": 0%....50%....100% - 16 passes
+==PROF== Disconnected from process 890812
+==PROF== Report: /home/lcpu/75132004/wmhpc-training-camp-x-lcpu-ai-infra-seminars/minimax-m3-msa-decode/results/raw/ncu/msa-1410e42aaeac-tp4-sscalar-b1-c16-partial-11908_0.ncu-rep
+report=results/raw/ncu/msa-1410e42aaeac-tp4-sscalar-b1-c16-partial-11908_0.ncu-rep
