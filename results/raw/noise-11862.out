@@ -1,0 +1,63 @@
+commit=2461be43e232312163018c4cad9183d8c7acf096
+baseline_commit=617aa6870d5482c284d25282adc8c2ab3476d263
+job=11862
+trials=10 warmup=100 iterations=500
+name, uuid, driver_version, temperature.gpu, clocks.current.sm [MHz], power.draw [W]
+NVIDIA B300 SXM6 AC, GPU-3924bd78-8b2f-8e85-3f20-8b0687d0bb0a, 580.126.09, 32, 120 MHz, 184.03 W
+trial=01 batches=1 4 8 16
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.623999871313572, 'p95_us': 11.90400030463934, 'stdev_us': 5.522541088888053, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.688000082969666, 'p95_us': 15.00799972563982, 'stdev_us': 0.5361340132845642, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.767999812960625, 'p95_us': 21.12000063061714, 'stdev_us': 0.4656263294569462, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.991999104619026, 'p95_us': 29.791999608278275, 'stdev_us': 0.539975285808278, 'iterations': 500}
+trial=02 batches=16 8 4 1
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.960000723600388, 'p95_us': 29.440000653266907, 'stdev_us': 0.6232673856893449, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.640000700950623, 'p95_us': 20.959999412298203, 'stdev_us': 0.7877317795950689, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.560000039637089, 'p95_us': 15.039999969303608, 'stdev_us': 0.8502755385579559, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.463999584317207, 'p95_us': 11.231999844312668, 'stdev_us': 1.6652083674397011, 'iterations': 500}
+trial=03 batches=1 4 8 16
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.495999827980995, 'p95_us': 11.136000044643879, 'stdev_us': 2.990485140316092, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.655999839305878, 'p95_us': 14.944000169634819, 'stdev_us': 0.3393161635662757, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.767999812960625, 'p95_us': 21.088000386953354, 'stdev_us': 0.4023852920705487, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.896000236272812, 'p95_us': 29.311999678611755, 'stdev_us': 0.5402502132959517, 'iterations': 500}
+trial=04 batches=16 8 4 1
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.960000723600388, 'p95_us': 29.311999678611755, 'stdev_us': 4.233057468086634, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.735999569296837, 'p95_us': 20.99199965596199, 'stdev_us': 0.9222479120768787, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.688000082969666, 'p95_us': 14.976000413298607, 'stdev_us': 0.5836438942126908, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.528000071644783, 'p95_us': 10.975999757647514, 'stdev_us': 0.4541719811237351, 'iterations': 500}
+trial=05 batches=1 4 8 16
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.463999584317207, 'p95_us': 11.04000024497509, 'stdev_us': 5.242455921466575, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.688000082969666, 'p95_us': 15.00799972563982, 'stdev_us': 0.5061189840429188, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.640000700950623, 'p95_us': 21.023999899625778, 'stdev_us': 0.4231418361112252, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.991999104619026, 'p95_us': 29.440000653266907, 'stdev_us': 0.34477687132548207, 'iterations': 500}
+trial=06 batches=16 8 4 1
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 29.055999591946602, 'p95_us': 29.85600009560585, 'stdev_us': 5.937260526678746, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.70399932563305, 'p95_us': 20.959999412298203, 'stdev_us': 0.788807159572964, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.655999839305878, 'p95_us': 14.976000413298607, 'stdev_us': 0.3874702779624984, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.688000358641148, 'p95_us': 11.807999573647976, 'stdev_us': 0.5421089316628063, 'iterations': 500}
+trial=07 batches=1 4 8 16
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.623999871313572, 'p95_us': 11.872000060975552, 'stdev_us': 5.365877165234272, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.70400020480156, 'p95_us': 14.976000413298607, 'stdev_us': 1.0289287086842884, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.78399993479252, 'p95_us': 21.088000386953354, 'stdev_us': 0.447715260552963, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 29.023999348282814, 'p95_us': 29.56799976527691, 'stdev_us': 0.42176719835413273, 'iterations': 500}
+trial=08 batches=16 8 4 1
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.991999104619026, 'p95_us': 29.40800040960312, 'stdev_us': 0.34540213262758807, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.735999569296837, 'p95_us': 20.99199965596199, 'stdev_us': 0.609773455447707, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.688000082969666, 'p95_us': 14.944000169634819, 'stdev_us': 0.8485435860997982, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.56000031530857, 'p95_us': 10.944000445306301, 'stdev_us': 0.4706881594084197, 'iterations': 500}
+trial=09 batches=1 4 8 16
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.56000031530857, 'p95_us': 11.071999557316303, 'stdev_us': 0.5729462524606354, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.688000082969666, 'p95_us': 14.944000169634819, 'stdev_us': 0.45123090816914113, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.800000056624413, 'p95_us': 21.088000386953354, 'stdev_us': 0.4319477218681683, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.9280004799366, 'p95_us': 29.21600081026554, 'stdev_us': 0.3785495449168824, 'iterations': 500}
+trial=10 batches=16 8 4 1
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 4, 'median_us': 28.9280004799366, 'p95_us': 29.311999678611755, 'stdev_us': 0.3453449247851688, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 8, 'median_us': 20.67199908196926, 'p95_us': 20.959999412298203, 'stdev_us': 0.6648594545143856, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 14.62399959564209, 'p95_us': 14.976000413298607, 'stdev_us': 0.3726801713869789, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'mode': 'graph', 'num_chunks': 16, 'median_us': 10.463999584317207, 'p95_us': 11.19999960064888, 'stdev_us': 0.344551297822565, 'iterations': 500}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 1, 'dtype': 'torch.float8_e4m3fn', 'num_chunks': 16, 'runs': 10, 'iterations_per_run': 500, 'mean_run_median_us': 10.547199938446283, 'sample_std_run_median_us': 0.07867365786588687, 'cv_pct': 0.7459198491071399, 'significance_threshold_pct': 5.0, 'min_run_median_us': 10.463999584317207, 'max_run_median_us': 10.688000358641148}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 4, 'dtype': 'torch.float8_e4m3fn', 'num_chunks': 16, 'runs': 10, 'iterations_per_run': 500, 'mean_run_median_us': 14.663999993354082, 'sample_std_run_median_us': 0.04349210087088278, 'cv_pct': 0.2965909771589878, 'significance_threshold_pct': 5.0, 'min_run_median_us': 14.560000039637089, 'max_run_median_us': 14.70400020480156}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 8, 'dtype': 'torch.float8_e4m3fn', 'num_chunks': 8, 'runs': 10, 'iterations_per_run': 500, 'mean_run_median_us': 20.72479985654354, 'sample_std_run_median_us': 0.05844792213550543, 'cv_pct': 0.2820192356021783, 'significance_threshold_pct': 5.0, 'min_run_median_us': 20.640000700950623, 'max_run_median_us': 20.800000056624413}
+{'gpu': 'NVIDIA B300 SXM6 AC', 'batch': 16, 'dtype': 'torch.float8_e4m3fn', 'num_chunks': 4, 'runs': 10, 'iterations_per_run': 500, 'mean_run_median_us': 28.972799889743328, 'sample_std_run_median_us': 0.04817699183005952, 'cv_pct': 0.1662835211418924, 'significance_threshold_pct': 5.0, 'min_run_median_us': 28.896000236272812, 'max_run_median_us': 29.055999591946602}
+name, uuid, temperature.gpu, clocks.current.sm [MHz], power.draw [W]
+NVIDIA B300 SXM6 AC, GPU-3924bd78-8b2f-8e85-3f20-8b0687d0bb0a, 34, 2032 MHz, 250.22 W
+summary=results/raw/run-noise-2461be43e232-11862.csv
