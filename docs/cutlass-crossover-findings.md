@@ -75,6 +75,35 @@ Consequently the metadata update is not the dominant CUTLASS cost and removing
 it cannot change the TP4 batch-16 decision. The approximately 30--34 us
 CUTLASS attention floor dominates small batches.
 
+## Independent boundary runs
+
+Slurm array `12386` ran each boundary shape in 10 independent Python
+processes. Every process rebuilt the random input with a distinct seed and
+performed 100 warmups followed by 500 timed iterations. The measurement code
+commit was `a51c14620c2e`.
+
+| Geometry | Batch | CUTLASS mean median | Triton mean median | Paired delta | CUTLASS run CV | Triton run CV |
+|---|---:|---:|---:|---:|---:|---:|
+| TP1 64/4 | 8 | 20.099 us | 20.106 us | -0.03% | 0.25% | 0.24% |
+| TP1 64/4 | 16 | 20.157 us | 28.352 us | -28.91% | 0.05% | 0.00% |
+| TP4 16/1 | 32 | 20.154 us | 20.160 us | -0.03% | 0.06% | 0.00% |
+| TP4 16/1 | 64 | 20.147 us | 28.352 us | -28.94% | 0.08% | 0.00% |
+
+The summary is in `results/raw/cutlass-boundary-noise-summary.csv`; the 40
+per-run CSV files retain every component and execution mode. Some medians land
+on the same CUDA-event timing quantum, explaining zero reported run CV in two
+Triton rows.
+
+Absolute medians in these dedicated runs differ from the earlier full sweep,
+consistent with a different GPU clock/runtime state. The paired crossover
+conclusion is unchanged. Applying `Delta > max(5%, 2 CV)`, TP1 batch 16 and
+TP4 batch 64 are stable CUTLASS wins, while TP1 batch 8 and TP4 batch 32 are
+ties.
+
+The conservative tested dispatch policy is therefore CUTLASS from batch 16
+for TP1 and from batch 64 for TP4. The exact TP4 transition within batches
+33--63 remains unmeasured.
+
 ## Implication for fusion go/no-go
 
 These results do not justify writing a fusion kernel yet. They provide a
@@ -85,5 +114,6 @@ register pressure, and occupancy remains the gate for fusion. In particular:
 - use Triton for latency-sensitive small batches;
 - CUTLASS is already a strong alternative for TP1 batch 16 and above;
 - do not generalize the TP1 batch-16 cutoff to TP4;
-- repeat independent runs around TP1 batch 8/16 and TP4 batch 32/>32 before
-  changing a production dispatch threshold.
+- the tested conservative TP4 cutoff is batch 64, not batch 16;
+- measure intermediate TP4 batches only if an exact 33--63 transition matters
+  to the production batch distribution.
