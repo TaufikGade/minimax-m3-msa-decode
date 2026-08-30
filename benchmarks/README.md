@@ -18,3 +18,7 @@ Current entry points:
 - summarize_run_noise.py: aggregate independent Graph benchmark runs, compute
   CV across per-run medians, and report the `max(5%, 2CV)` significance
   threshold. `scripts/run_b300_noise.sbatch` generates the input trials.
+- bench_graph_ab.py and summarize_graph_ab.py: measure paired partial-only,
+  merge-only, and full Graph replay latency. The `full - partial` difference is
+  a deliberately loose upper bound on eliminating the second stage, not an
+  achievable fusion-speedup claim. `scripts/run_graph_ab.sbatch` runs trials.
