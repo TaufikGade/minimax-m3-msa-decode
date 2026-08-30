@@ -30,14 +30,15 @@ esac
 num_heads=16
 num_kv_heads=1
 chunks=16
+scale_mode="${SCALE_MODE:-scalar}"
 mkdir -p results/raw/ncu
 commit="$(git rev-parse --short=12 HEAD)"
-report_base="results/raw/ncu/msa-${commit}-tp4-b${batch}-c${chunks}-${kernel}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+report_base="results/raw/ncu/msa-${commit}-tp4-s${scale_mode}-b${batch}-c${chunks}-${kernel}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 
 echo "commit=$(git rev-parse HEAD)"
 echo "baseline_commit=$(git rev-list -n 1 baseline-b300-split-sweep-v1)"
 echo "job=${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
-echo "case=tp4,batch=${batch},chunks=${chunks},kernel=${kernel}"
+echo "case=tp4,batch=${batch},chunks=${chunks},kernel=${kernel},scale_mode=${scale_mode}"
 nvidia-smi --query-gpu=name,uuid,driver_version,temperature.gpu,clocks.sm,power.draw \
   --format=csv
 ncu --version
@@ -62,6 +63,7 @@ ncu \
     --kernel "$kernel" \
     --num-heads "$num_heads" \
     --num-kv-heads "$num_kv_heads" \
+    --scale-mode "$scale_mode" \
     --warmup 20 \
     --profile-launches 1
 

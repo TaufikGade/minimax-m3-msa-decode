@@ -33,6 +33,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--profile-launches", type=int, default=1)
     parser.add_argument("--num-heads", type=int, default=64)
     parser.add_argument("--num-kv-heads", type=int, default=4)
+    parser.add_argument(
+        "--scale-mode",
+        choices=("scalar", "per_token_head"),
+        default="scalar",
+    )
     parser.add_argument("--seed", type=int, default=20260829)
     parser.add_argument("--bf16", action="store_true")
     parser.add_argument("--no-pdl", action="store_true")
@@ -50,6 +55,8 @@ def validate_args(args: argparse.Namespace) -> None:
         raise ValueError("head counts must be positive")
     if args.num_heads % args.num_kv_heads:
         raise ValueError("num-heads must be divisible by num-kv-heads")
+    if args.bf16 and args.scale_mode != "scalar":
+        raise ValueError("--scale-mode applies only to FP8 inputs")
 
 
 def check_correctness(case, workspace) -> dict[str, float]:
@@ -88,6 +95,7 @@ def main() -> None:
         num_heads=args.num_heads,
         num_kv_heads=args.num_kv_heads,
         fp8=not args.bf16,
+        scale_mode=args.scale_mode,
         seed=args.seed,
     )
     selected_chunks = args.chunks
@@ -120,7 +128,7 @@ def main() -> None:
         "num_heads": args.num_heads,
         "num_kv_heads": args.num_kv_heads,
         "kv_dtype": str(case.kv_cache.dtype),
-        "scale_mode": "scalar" if not args.bf16 else "none",
+        "scale_mode": case.scale_mode,
         "page_layout": "random",
         "chunks": workspace.num_chunks,
         "kernel": args.kernel,

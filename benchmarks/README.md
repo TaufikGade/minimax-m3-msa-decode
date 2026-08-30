@@ -22,5 +22,8 @@ Current entry points:
   merge-only, and full Graph replay latency. The `full - partial` difference is
   a deliberately loose upper bound on eliminating the second stage, not an
   achievable fusion-speedup claim. `scripts/run_graph_ab.sbatch` runs trials
-  and accepts `NUM_HEADS`, `NUM_KV_HEADS`, and colon-separated `BATCHES`
-  environment overrides for TP controls.
+  and accepts `NUM_HEADS`, `NUM_KV_HEADS`, `SCALE_MODE`, and colon-separated
+  `BATCHES` environment overrides for TP and FP8-scale controls. Use
+  `SCALE_MODES=scalar:per_token_head` to alternate both modes within one GPU
+  allocation. Per-token scales use the upstream-compatible shape
+  `[num_kv_heads, physical_pages * 128]`.

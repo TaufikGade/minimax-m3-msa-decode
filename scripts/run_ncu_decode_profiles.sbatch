@@ -27,14 +27,16 @@ case "$kernel" in
   merge) kernel_regex='.*_merge_topk_attn_out_kernel.*' ;;
 esac
 
+scale_mode="${SCALE_MODE:-scalar}"
+
 mkdir -p results/raw/ncu
 commit="$(git rev-parse --short=12 HEAD)"
-report_base="results/raw/ncu/msa-${commit}-b${batch}-c${chunks}-${kernel}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
+report_base="results/raw/ncu/msa-${commit}-s${scale_mode}-b${batch}-c${chunks}-${kernel}-${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
 
 echo "commit=$(git rev-parse HEAD)"
 echo "tag=$(git tag --points-at HEAD | paste -sd, -)"
 echo "job=${SLURM_ARRAY_JOB_ID}_${SLURM_ARRAY_TASK_ID}"
-echo "case=batch=${batch},chunks=${chunks},kernel=${kernel}"
+echo "case=batch=${batch},chunks=${chunks},kernel=${kernel},scale_mode=${scale_mode}"
 nvidia-smi --query-gpu=name,uuid,driver_version,temperature.gpu,clocks.sm,power.draw \
   --format=csv
 ncu --version
@@ -57,6 +59,7 @@ ncu \
     --batch "$batch" \
     --chunks "$chunks" \
     --kernel "$kernel" \
+    --scale-mode "$scale_mode" \
     --warmup 20 \
     --profile-launches 1
 

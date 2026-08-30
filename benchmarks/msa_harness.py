@@ -73,6 +73,14 @@ class DecodeCase:
     def sm_scale(self) -> float:
         return self.q.shape[-1] ** -0.5
 
+    @property
+    def scale_mode(self) -> str:
+        if self.k_scale is None:
+            return "none"
+        if self.k_scale.numel() == 1:
+            return "scalar"
+        return "per_token_head"
+
 
 @dataclass
 class DecodeWorkspace:
@@ -89,6 +97,7 @@ def make_case(
     num_kv_heads: int = 4,
     seq_len: int = TOPK * PAGE_SIZE,
     fp8: bool = True,
+    scale_mode: str = "scalar",
     seed: int = 20260829,
     device: str = "cuda",
 ) -> DecodeCase:
@@ -96,6 +105,8 @@ def make_case(
         raise ValueError("num_heads must be divisible by num_kv_heads")
     if seq_len > TOPK * PAGE_SIZE:
         raise ValueError("minimal harness supports sequence lengths up to 2048")
+    if scale_mode not in ("scalar", "per_token_head"):
+        raise ValueError("scale_mode must be scalar or per_token_head")
 
     generator = torch.Generator(device=device).manual_seed(seed)
     q = torch.randn(
@@ -141,14 +152,46 @@ def make_case(
     k_scale = v_scale = None
     kv_cache = kv_bf16
     if fp8:
-        k_scale = torch.tensor(0.25, dtype=torch.float32, device=device)
-        v_scale = torch.tensor(0.50, dtype=torch.float32, device=device)
+        if scale_mode == "scalar":
+            k_scale = torch.tensor(0.25, dtype=torch.float32, device=device)
+            v_scale = torch.tensor(0.50, dtype=torch.float32, device=device)
+            k_quant_scale = k_scale
+            v_quant_scale = v_scale
+        else:
+            # Match the upstream [KV head, flattened physical token] layout.
+            # Vary the values so correctness checks also exercise physical-page
+            # indexing instead of only validating the tensor shape.
+            physical_tokens = physical_pages * PAGE_SIZE
+            k_scale = 0.20 + 0.10 * torch.rand(
+                num_kv_heads,
+                physical_tokens,
+                dtype=torch.float32,
+                device=device,
+                generator=generator,
+            )
+            v_scale = 0.40 + 0.20 * torch.rand(
+                num_kv_heads,
+                physical_tokens,
+                dtype=torch.float32,
+                device=device,
+                generator=generator,
+            )
+            k_quant_scale = (
+                k_scale.reshape(num_kv_heads, physical_pages, PAGE_SIZE)
+                .permute(1, 0, 2)
+                .unsqueeze(-1)
+            )
+            v_quant_scale = (
+                v_scale.reshape(num_kv_heads, physical_pages, PAGE_SIZE)
+                .permute(1, 0, 2)
+                .unsqueeze(-1)
+            )
         kv_cache = torch.empty_like(kv_bf16, dtype=torch.float8_e4m3fn)
         kv_cache[..., :HEAD_DIM] = (
-            kv_bf16[..., :HEAD_DIM].float() / k_scale
+            kv_bf16[..., :HEAD_DIM].float() / k_quant_scale
         ).to(kv_cache.dtype)
         kv_cache[..., HEAD_DIM:] = (
-            kv_bf16[..., HEAD_DIM:].float() / v_scale
+            kv_bf16[..., HEAD_DIM:].float() / v_quant_scale
         ).to(kv_cache.dtype)
 
     return DecodeCase(
@@ -365,8 +408,20 @@ def reference_decode(case: DecodeCase) -> torch.Tensor:
                 key = page[:block_tokens, :head_dim].float()
                 value = page[:block_tokens, head_dim:].float()
                 if case.k_scale is not None:
-                    key = key * case.k_scale.float()
-                    value = value * case.v_scale.float()
+                    if case.scale_mode == "scalar":
+                        key = key * case.k_scale.float()
+                        value = value * case.v_scale.float()
+                    else:
+                        token_start = physical * PAGE_SIZE
+                        token_stop = token_start + block_tokens
+                        key_scale = case.k_scale[
+                            kv_head, token_start:token_stop
+                        ].float()
+                        value_scale = case.v_scale[
+                            kv_head, token_start:token_stop
+                        ].float()
+                        key = key * key_scale[:, None]
+                        value = value * value_scale[:, None]
                 keys.append(key)
                 values.append(value)
             key = torch.cat(keys, dim=0)

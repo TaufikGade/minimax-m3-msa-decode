@@ -34,12 +34,17 @@ def main() -> None:
         for row in rows:
             row.setdefault("num_heads", "64")
             row.setdefault("num_kv_heads", "4")
+            row.setdefault(
+                "scale_mode",
+                "scalar" if "float8" in row["dtype"] else "none",
+            )
         stable = (
             "gpu",
             "batch",
             "num_heads",
             "num_kv_heads",
             "dtype",
+            "scale_mode",
             "num_chunks",
             "iterations",
             "seed",
@@ -85,6 +90,7 @@ def main() -> None:
                 "num_heads": int(meta["num_heads"]),
                 "num_kv_heads": int(meta["num_kv_heads"]),
                 "dtype": meta["dtype"],
+                "scale_mode": meta["scale_mode"],
                 "num_chunks": int(meta["num_chunks"]),
                 "runs": len(values),
                 "iterations_per_mode_per_run": int(meta["iterations"]),

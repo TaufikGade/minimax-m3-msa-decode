@@ -17,11 +17,16 @@ from msa_harness import (  # noqa: E402
 
 
 @pytest.mark.parametrize("batch", [1, 4])
-@pytest.mark.parametrize("fp8", [False, True])
-def test_triton_matches_fp32_reference(batch: int, fp8: bool) -> None:
+@pytest.mark.parametrize(
+    ("fp8", "scale_mode"),
+    [(False, "scalar"), (True, "scalar"), (True, "per_token_head")],
+)
+def test_triton_matches_fp32_reference(
+    batch: int, fp8: bool, scale_mode: str
+) -> None:
     if not torch.cuda.is_available():
         pytest.skip("CUDA required")
-    case = make_case(batch, fp8=fp8)
+    case = make_case(batch, fp8=fp8, scale_mode=scale_mode)
     workspace = allocate_workspace(case)
     actual = launch_triton_baseline(case, workspace).clone()
     expected = reference_decode(case)

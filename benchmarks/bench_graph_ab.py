@@ -28,6 +28,11 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--chunks", type=int)
     parser.add_argument("--num-heads", type=int, default=64)
     parser.add_argument("--num-kv-heads", type=int, default=4)
+    parser.add_argument(
+        "--scale-mode",
+        choices=("scalar", "per_token_head"),
+        default="scalar",
+    )
     parser.add_argument("--warmup", type=int, default=100)
     parser.add_argument("--iterations", type=int, default=500)
     parser.add_argument(
@@ -88,6 +93,7 @@ def main() -> None:
         num_heads=args.num_heads,
         num_kv_heads=args.num_kv_heads,
         fp8=True,
+        scale_mode=args.scale_mode,
         seed=args.seed,
     )
     chunks = args.chunks
@@ -129,6 +135,7 @@ def main() -> None:
             "num_heads": args.num_heads,
             "num_kv_heads": args.num_kv_heads,
             "dtype": str(case.kv_cache.dtype),
+            "scale_mode": case.scale_mode,
             "num_chunks": workspace.num_chunks,
             "mode": mode,
             "median_us": statistics.median(samples),
