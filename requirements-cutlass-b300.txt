@@ -1,0 +1,10 @@
+# Optional dependencies for the SM100 CUTLASS/MSA crossover benchmark.
+# Install after requirements-b300.txt. The MSA source dependency is pinned to
+# the commit used by vLLM d4da0c55af3aa231b6209bf77871f3ed36eab0d2.
+apache-tvm-ffi==0.1.11
+cuda-python==13.3.1
+ninja==1.13.0
+nvidia-cutlass-dsl[cu13]==4.6.0
+pybind11==3.1.0
+quack-kernels==0.6.1
+fmha-sm100 @ git+https://github.com/vllm-project/MSA.git@087c161814d4d9c735b46c21212a09e5f8eb92fa
