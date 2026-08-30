@@ -26,6 +26,8 @@ def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
     parser.add_argument("--batch", type=int, required=True)
     parser.add_argument("--chunks", type=int)
+    parser.add_argument("--num-heads", type=int, default=64)
+    parser.add_argument("--num-kv-heads", type=int, default=4)
     parser.add_argument("--warmup", type=int, default=100)
     parser.add_argument("--iterations", type=int, default=500)
     parser.add_argument(
@@ -74,10 +76,20 @@ def main() -> None:
         raise RuntimeError("CUDA GPU is required")
     if args.batch < 1 or args.warmup < 1 or args.iterations < 1:
         raise ValueError("batch, warmup, and iterations must be positive")
+    if args.num_heads < 1 or args.num_kv_heads < 1:
+        raise ValueError("head counts must be positive")
+    if args.num_heads % args.num_kv_heads:
+        raise ValueError("num-heads must be divisible by num-kv-heads")
     if len(set(args.order)) != 3:
         raise ValueError("order must contain partial, merge, and full exactly once")
 
-    case = make_case(args.batch, fp8=True, seed=args.seed)
+    case = make_case(
+        args.batch,
+        num_heads=args.num_heads,
+        num_kv_heads=args.num_kv_heads,
+        fp8=True,
+        seed=args.seed,
+    )
     chunks = args.chunks
     if chunks is None:
         chunks = default_num_chunks(case)
@@ -114,6 +126,8 @@ def main() -> None:
         row = {
             "gpu": torch.cuda.get_device_name(),
             "batch": args.batch,
+            "num_heads": args.num_heads,
+            "num_kv_heads": args.num_kv_heads,
             "dtype": str(case.kv_cache.dtype),
             "num_chunks": workspace.num_chunks,
             "mode": mode,

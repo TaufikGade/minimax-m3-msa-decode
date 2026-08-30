@@ -21,4 +21,6 @@ Current entry points:
 - bench_graph_ab.py and summarize_graph_ab.py: measure paired partial-only,
   merge-only, and full Graph replay latency. The `full - partial` difference is
   a deliberately loose upper bound on eliminating the second stage, not an
-  achievable fusion-speedup claim. `scripts/run_graph_ab.sbatch` runs trials.
+  achievable fusion-speedup claim. `scripts/run_graph_ab.sbatch` runs trials
+  and accepts `NUM_HEADS`, `NUM_KV_HEADS`, and colon-separated `BATCHES`
+  environment overrides for TP controls.

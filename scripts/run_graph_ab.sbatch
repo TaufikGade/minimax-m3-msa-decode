@@ -16,15 +16,20 @@ source "$repo_dir/.venv/bin/activate"
 trials="${TRIALS:-10}"
 warmup="${WARMUP:-100}"
 iterations="${ITERATIONS:-500}"
+num_heads="${NUM_HEADS:-64}"
+num_kv_heads="${NUM_KV_HEADS:-4}"
+IFS=: read -r -a configured_batches <<< "${BATCHES:-1:16}"
 commit="$(git rev-parse --short=12 HEAD)"
-output_dir="results/raw/graph-ab/msa-${commit}-${SLURM_JOB_ID}"
-summary="results/raw/graph-ab-${commit}-${SLURM_JOB_ID}.csv"
+shape="h${num_heads}-kv${num_kv_heads}"
+output_dir="results/raw/graph-ab/msa-${commit}-${shape}-${SLURM_JOB_ID}"
+summary="results/raw/graph-ab-${commit}-${shape}-${SLURM_JOB_ID}.csv"
 mkdir -p "$output_dir"
 
 echo "commit=$(git rev-parse HEAD)"
 echo "baseline_commit=$(git rev-list -n 1 baseline-b300-split-sweep-v1)"
 echo "job=$SLURM_JOB_ID"
 echo "trials=$trials warmup=$warmup iterations=$iterations"
+echo "num_heads=$num_heads num_kv_heads=$num_kv_heads batches=${configured_batches[*]}"
 nvidia-smi --query-gpu=name,uuid,driver_version,temperature.gpu,clocks.sm,power.draw \
   --format=csv
 
@@ -36,16 +41,19 @@ for trial in $(seq 1 "$trials"); do
     0) modes=(merge partial full) ;;
   esac
   if (( trial % 2 == 1 )); then
-    batches=(1 16)
+    batches=("${configured_batches[@]}")
   else
-    batches=(16 1)
+    batches=()
+    for ((index=${#configured_batches[@]}-1; index>=0; index--)); do
+      batches+=("${configured_batches[index]}")
+    done
   fi
   for batch in "${batches[@]}"; do
-    if (( batch == 1 )); then chunks=16; else chunks=4; fi
     echo "trial=$trial_id batch=$batch modes=${modes[*]}"
     python benchmarks/bench_graph_ab.py \
       --batch "$batch" \
-      --chunks "$chunks" \
+      --num-heads "$num_heads" \
+      --num-kv-heads "$num_kv_heads" \
       --warmup "$warmup" \
       --iterations "$iterations" \
       --order "${modes[@]}" \

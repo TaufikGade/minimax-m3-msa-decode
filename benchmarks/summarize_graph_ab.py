@@ -29,7 +29,21 @@ def main() -> None:
         if set(by_mode) != {"partial", "merge", "full"}:
             raise ValueError(f"{path}: expected partial, merge, and full rows")
         batch = int(rows[0]["batch"])
-        stable = ("gpu", "batch", "dtype", "num_chunks", "iterations", "seed")
+        # Older TP1 result files predate explicit head-count columns. Preserve
+        # their reproducibility by assigning the original 64/4 defaults.
+        for row in rows:
+            row.setdefault("num_heads", "64")
+            row.setdefault("num_kv_heads", "4")
+        stable = (
+            "gpu",
+            "batch",
+            "num_heads",
+            "num_kv_heads",
+            "dtype",
+            "num_chunks",
+            "iterations",
+            "seed",
+        )
         for field in stable:
             values = {row[field] for row in rows}
             if len(values) != 1:
@@ -68,6 +82,8 @@ def main() -> None:
             {
                 "gpu": meta["gpu"],
                 "batch": batch,
+                "num_heads": int(meta["num_heads"]),
+                "num_kv_heads": int(meta["num_kv_heads"]),
                 "dtype": meta["dtype"],
                 "num_chunks": int(meta["num_chunks"]),
                 "runs": len(values),
