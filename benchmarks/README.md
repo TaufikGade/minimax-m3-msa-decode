@@ -15,3 +15,6 @@ Current entry points:
 - profile_decode_kernel.py: validate and warm up one fixed shape, then launch
   only the selected partial or merge kernel inside a CUDA profiler range. Use
   it with `ncu --profile-from-start off` so setup and warm-up are not captured.
+- summarize_run_noise.py: aggregate independent Graph benchmark runs, compute
+  CV across per-run medians, and report the `max(5%, 2CV)` significance
+  threshold. `scripts/run_b300_noise.sbatch` generates the input trials.
