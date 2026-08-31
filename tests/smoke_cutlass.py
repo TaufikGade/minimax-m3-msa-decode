@@ -20,6 +20,7 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batch", type=int, required=True)
     parser.add_argument("--num-heads", type=int, required=True)
     parser.add_argument("--num-kv-heads", type=int, required=True)
+    parser.add_argument("--effective-kv-len", type=int, default=2048)
     parser.add_argument("--seed", type=int, default=20260829)
     return parser.parse_args()
 
@@ -41,6 +42,7 @@ def main() -> None:
         args.batch,
         num_heads=args.num_heads,
         num_kv_heads=args.num_kv_heads,
+        effective_kv_len=args.effective_kv_len,
         seed=args.seed,
     )
     expected = reference_decode(case.baseline)
@@ -62,6 +64,7 @@ def main() -> None:
     print(
         "PASS "
         f"batch={args.batch} heads={args.num_heads}/{args.num_kv_heads} "
+        f"effective_kv_len={args.effective_kv_len} "
         f"q_scale={case.query_scale:.9g} "
         f"triton_max_abs={triton_max_abs:.6g} "
         f"triton_cosine={triton_cosine:.8f} "

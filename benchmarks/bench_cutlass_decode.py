@@ -26,6 +26,12 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--batches", nargs="+", type=int, default=[1, 4, 8, 16, 32])
     parser.add_argument("--num-heads", type=int, required=True)
     parser.add_argument("--num-kv-heads", type=int, required=True)
+    parser.add_argument(
+        "--effective-kv-len",
+        type=int,
+        default=2048,
+        help="Runtime KV length; allocation/top-k capacity remains 2048 tokens",
+    )
     parser.add_argument("--warmup", type=int, default=100)
     parser.add_argument("--iterations", type=int, default=500)
     parser.add_argument("--seed", type=int, default=20260829)
@@ -105,6 +111,8 @@ def main() -> None:
         raise ValueError("num-heads must be divisible by num-kv-heads")
     if min(args.batches) < 1 or args.warmup < 1 or args.iterations < 1:
         raise ValueError("batches, warmup, and iterations must be positive")
+    if not 1 <= args.effective_kv_len <= 2048:
+        raise ValueError("effective-kv-len must be in [1, 2048]")
 
     rows: list[dict[str, object]] = []
     commit = git_commit()
@@ -113,6 +121,7 @@ def main() -> None:
             batch,
             num_heads=args.num_heads,
             num_kv_heads=args.num_kv_heads,
+            effective_kv_len=args.effective_kv_len,
             seed=args.seed,
         )
         expected = reference_decode(case.baseline)
@@ -173,6 +182,7 @@ def main() -> None:
                     "batch": batch,
                     "num_heads": args.num_heads,
                     "num_kv_heads": args.num_kv_heads,
+                    "effective_kv_len": args.effective_kv_len,
                     "backend": backend,
                     "component": component,
                     "execution": execution,

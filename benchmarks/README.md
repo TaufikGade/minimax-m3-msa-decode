@@ -27,3 +27,10 @@ Current entry points:
   `SCALE_MODES=scalar:per_token_head` to alternate both modes within one GPU
   allocation. Per-token scales use the upstream-compatible shape
   `[num_kv_heads, physical_pages * 128]`.
+- bench_cutlass_decode.py accepts `--effective-kv-len` while retaining the
+  fixed 2048-token allocation and 16-page top-k capacity. This isolates runtime
+  KV length from layout/capacity changes. `scripts/run_cutlass_kvlen_crossover.sbatch`
+  measures 128/512/1024/2048 tokens at the TP1 batch 8/16 and TP4 batch 32/64
+  boundaries in ten independent processes per shape. Aggregate its CSV files
+  with summarize_cutlass_boundary_noise.py; older CSV files without the new
+  column are treated as 2048-token cases.

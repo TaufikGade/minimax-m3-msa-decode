@@ -19,8 +19,10 @@ def parse_args() -> argparse.Namespace:
 
 def main() -> None:
     args = parse_args()
-    groups: dict[tuple[int, int, int, str], list[float]] = defaultdict(list)
-    paired: dict[tuple[Path, int, int, int], dict[str, float]] = defaultdict(dict)
+    groups: dict[tuple[int, int, int, int, str], list[float]] = defaultdict(list)
+    paired: dict[
+        tuple[Path, int, int, int, int], dict[str, float]
+    ] = defaultdict(dict)
 
     for path in args.inputs:
         with path.open(newline="", encoding="utf-8") as stream:
@@ -28,27 +30,39 @@ def main() -> None:
                 if row["component"] != "full" or row["execution"] != "graph":
                     continue
                 batch = int(row["batch"])
+                effective_kv_len = int(row.get("effective_kv_len", 2048))
                 num_heads = int(row["num_heads"])
                 num_kv_heads = int(row["num_kv_heads"])
                 backend = row["backend"]
                 median = float(row["median_us"])
-                groups[(batch, num_heads, num_kv_heads, backend)].append(median)
-                paired[(path, batch, num_heads, num_kv_heads)][backend] = median
+                shape = (effective_kv_len, batch, num_heads, num_kv_heads)
+                groups[(*shape, backend)].append(median)
+                paired[(path, *shape)][backend] = median
 
     rows: list[dict[str, object]] = []
-    shape_keys = sorted({key[:3] for key in groups})
-    for batch, num_heads, num_kv_heads in shape_keys:
-        cutlass = groups[(batch, num_heads, num_kv_heads, "cutlass")]
-        triton = groups[(batch, num_heads, num_kv_heads, "triton")]
+    shape_keys = sorted({key[:4] for key in groups})
+    for effective_kv_len, batch, num_heads, num_kv_heads in shape_keys:
+        cutlass = groups[
+            (effective_kv_len, batch, num_heads, num_kv_heads, "cutlass")
+        ]
+        triton = groups[
+            (effective_kv_len, batch, num_heads, num_kv_heads, "triton")
+        ]
         deltas = []
-        for (path, b, h, hk), values in paired.items():
-            if (b, h, hk) == (batch, num_heads, num_kv_heads):
+        for (path, kv_len, b, h, hk), values in paired.items():
+            if (kv_len, b, h, hk) == (
+                effective_kv_len,
+                batch,
+                num_heads,
+                num_kv_heads,
+            ):
                 deltas.append((values["cutlass"] / values["triton"] - 1.0) * 100.0)
         for backend, samples in (("cutlass", cutlass), ("triton", triton)):
             mean = statistics.mean(samples)
             stdev = statistics.pstdev(samples)
             rows.append(
                 {
+                    "effective_kv_len": effective_kv_len,
                     "batch": batch,
                     "num_heads": num_heads,
                     "num_kv_heads": num_kv_heads,

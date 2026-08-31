@@ -9,7 +9,14 @@ import torch
 import triton
 import triton.language as tl
 
-from msa_harness import DecodeCase, DecodeWorkspace, allocate_workspace, make_case
+from msa_harness import (
+    PAGE_SIZE,
+    TOPK,
+    DecodeCase,
+    DecodeWorkspace,
+    allocate_workspace,
+    make_case,
+)
 
 
 @triton.jit
@@ -61,19 +68,29 @@ def make_cutlass_case(
     *,
     num_heads: int,
     num_kv_heads: int,
+    effective_kv_len: int = TOPK * PAGE_SIZE,
     seed: int = 20260829,
 ) -> CutlassDecodeCase:
     """Create one input shared by CUTLASS and the pinned Triton baseline."""
     from fmha_sm100.api import fmha_sm100_plan
 
+    max_kv_len = TOPK * PAGE_SIZE
+    if not 1 <= effective_kv_len <= max_kv_len:
+        raise ValueError(
+            f"effective_kv_len must be in [1, {max_kv_len}], "
+            f"got {effective_kv_len}"
+        )
+
     case = make_case(
         batch,
         num_heads=num_heads,
         num_kv_heads=num_kv_heads,
+        seq_len=max_kv_len,
         fp8=True,
         scale_mode="scalar",
         seed=seed,
     )
+    case.seq_lens.fill_(effective_kv_len)
 
     # CUTLASS requires strictly ascending logical block indices. Attention is
     # permutation invariant, so use this same order for the Triton comparison.
