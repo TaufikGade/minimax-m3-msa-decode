@@ -21,6 +21,7 @@ class DispatchReason(str, Enum):
     STABLE_CUTLASS_WIN = "stable_cutlass_win"
     BELOW_MEASURED_CROSSOVER = "below_measured_crossover"
     UNSUPPORTED_SCALE_MODE = "unsupported_scale_mode"
+    UNSUPPORTED_KV_CACHE_DTYPE = "unsupported_kv_cache_dtype"
     UNMEASURED_QUERY_LENGTH = "unmeasured_query_length"
     UNMEASURED_HEAD_GEOMETRY = "unmeasured_head_geometry"
 
@@ -47,7 +48,7 @@ def select_decode_backend(
     decode_query_len: int,
     num_q_heads: int,
     num_kv_heads: int,
-    scale_mode: str,
+    kv_cache_dtype: str,
 ) -> DispatchDecision:
     """Select a backend without extrapolating beyond measured shapes.
 
@@ -62,10 +63,17 @@ def select_decode_backend(
     if num_q_heads < 1 or num_kv_heads < 1:
         raise ValueError("head counts must be positive")
 
-    if scale_mode != "scalar":
+    if kv_cache_dtype.endswith("_per_token_head"):
         return DispatchDecision(
             DecodeBackend.TRITON,
             DispatchReason.UNSUPPORTED_SCALE_MODE,
+            None,
+        )
+
+    if kv_cache_dtype not in ("fp8", "fp8_e4m3"):
+        return DispatchDecision(
+            DecodeBackend.TRITON,
+            DispatchReason.UNSUPPORTED_KV_CACHE_DTYPE,
             None,
         )
 
@@ -104,7 +112,7 @@ def should_prepare_cutlass_metadata(
     decode_query_len: int,
     num_q_heads: int,
     num_kv_heads: int,
-    scale_mode: str,
+    kv_cache_dtype: str,
 ) -> bool:
     """Return whether the evidence-bounded policy selects CUTLASS."""
     decision = select_decode_backend(
@@ -112,6 +120,6 @@ def should_prepare_cutlass_metadata(
         decode_query_len=decode_query_len,
         num_q_heads=num_q_heads,
         num_kv_heads=num_kv_heads,
-        scale_mode=scale_mode,
+        kv_cache_dtype=kv_cache_dtype,
     )
     return decision.backend is DecodeBackend.CUTLASS

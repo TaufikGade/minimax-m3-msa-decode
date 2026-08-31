@@ -31,16 +31,32 @@ The policy intentionally falls back to Triton for:
 Both measured geometries have GQA ratio 16, yet their thresholds differ by 4x.
 The dispatch key therefore cannot be reduced to GQA ratio alone.
 
-## Integration gap
+## Upstream integration
 
-The pinned metadata builder selects and prepares a CUTLASS plan before the
-runtime `k_scale` and `v_scale` tensors are inspected. A production upstream
-integration needs an explicit, graph-stable scale-mode signal in the builder
-or model configuration. Without that signal, automatically selecting CUTLASS
-could silently route per-token/head scale cases through scalar scale arguments.
+The pinned commit already represents per-token/head scaling with the distinct
+`fp8_per_token_head` cache dtype. Its CUTLASS support guard accepts only `fp8`
+and `fp8_e4m3`, so the metadata builder already has a static, graph-stable
+signal and correctly rejects the per-token/head mode. No new runtime tensor
+inspection or cache-key field is required.
 
-The next integration step is therefore an upstream design change, not a local
-edit to `vendor/`: thread the configured KV scale granularity into metadata
-planning, then replace the common batch-16 cutoff with the exact-geometry
-policy and add upstream tests for TP1, TP4, per-token fallback, and unmeasured
-geometries.
+This was checked directly at pinned vLLM commit `d4da0c5`:
+
+- `vllm/config/cache.py` includes `fp8_per_token_head` in `CacheDType`;
+- `vllm/utils/torch_utils.py` identifies per-token/head modes from the dtype;
+- `vllm/model_executor/layers/quantization/kv_cache.py` keeps scalar host
+  values at 1.0 for per-token/head caches because their scales are dynamic.
+
+The minimal upstream change is to replace the common batch-16 cutoff with the
+exact-geometry threshold table. The
+[patch draft](../patches/vllm-d4da0c5-geometry-aware-cutlass-dispatch.patch)
+records that proposal without modifying `vendor/`. It is validated against the
+snapshot with:
+
+```bash
+git apply --check --unidiff-zero -p5 \
+  --directory=vendor/vllm_msa_ref \
+  patches/vllm-d4da0c5-geometry-aware-cutlass-dispatch.patch
+```
+
+An upstream submission should add tests for TP1, TP4, per-token fallback,
+E5M2 fallback, and unmeasured geometries.

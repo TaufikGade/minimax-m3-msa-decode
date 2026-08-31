@@ -40,7 +40,7 @@ def test_scalar_thresholds_are_geometry_aware(
         decode_query_len=1,
         num_q_heads=num_q_heads,
         num_kv_heads=num_kv_heads,
-        scale_mode="scalar",
+        kv_cache_dtype="fp8",
     )
     assert decision.backend is expected
 
@@ -51,11 +51,23 @@ def test_per_token_scale_stays_on_triton() -> None:
         decode_query_len=1,
         num_q_heads=64,
         num_kv_heads=4,
-        scale_mode="per_token_head",
+        kv_cache_dtype="fp8_per_token_head",
     )
     assert decision.backend is DecodeBackend.TRITON
     assert decision.reason is DispatchReason.UNSUPPORTED_SCALE_MODE
     assert decision.cutlass_min_batch is None
+
+
+def test_other_kv_cache_dtype_stays_on_triton() -> None:
+    decision = select_decode_backend(
+        batch_size=128,
+        decode_query_len=1,
+        num_q_heads=64,
+        num_kv_heads=4,
+        kv_cache_dtype="fp8_e5m2",
+    )
+    assert decision.backend is DecodeBackend.TRITON
+    assert decision.reason is DispatchReason.UNSUPPORTED_KV_CACHE_DTYPE
 
 
 @pytest.mark.parametrize(
@@ -76,7 +88,7 @@ def test_unmeasured_shapes_do_not_extrapolate(
         decode_query_len=decode_query_len,
         num_q_heads=num_q_heads,
         num_kv_heads=num_kv_heads,
-        scale_mode="scalar",
+        kv_cache_dtype="fp8_e4m3",
     )
     assert decision.backend is DecodeBackend.TRITON
     assert decision.reason is reason
@@ -97,7 +109,7 @@ def test_invalid_dimensions_are_rejected(field: str, value: int) -> None:
         "decode_query_len": 1,
         "num_q_heads": 64,
         "num_kv_heads": 4,
-        "scale_mode": "scalar",
+        "kv_cache_dtype": "fp8",
     }
     kwargs[field] = value
     with pytest.raises(ValueError):
@@ -110,12 +122,12 @@ def test_metadata_helper_matches_backend_decision() -> None:
         decode_query_len=1,
         num_q_heads=64,
         num_kv_heads=4,
-        scale_mode="scalar",
+        kv_cache_dtype="fp8",
     )
     assert not should_prepare_cutlass_metadata(
         batch_size=16,
         decode_query_len=1,
         num_q_heads=16,
         num_kv_heads=1,
-        scale_mode="scalar",
+        kv_cache_dtype="fp8",
     )
