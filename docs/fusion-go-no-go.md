@@ -2,17 +2,19 @@
 
 ## Decision
 
-**No-go for a functional fused kernel at the current evidence level.**
+**Final no-go for a functional fused kernel.**
 
-**Go only for a bounded resource-feasibility study of the scalar-scale path.**
-The study may specify the cross-CTA reduction protocol and compile a
-non-functional/resource-only skeleton, but it must not proceed to a complete
-attention implementation until the occupancy and spill gates below pass.
+The bounded last-producer resource skeleton was completed at commit
+`e1682106c3de` in Slurm job `13131`. Device-scope synchronization and Graph
+counter reset passed, but the mandatory reduction-tail gate failed. The
+protocol added 9.696 us at TP1 scalar batch 1 and 7.152 us at TP4 scalar batch
+1 over the same synthetic producer-only Graph. These tails exceed the real
+two-kernel paired recoverable bounds of 2.018 us and 1.970 us respectively.
 
-The per-token-scale path is a separate no-go for direct same-program fusion:
-its partial specialization already uses 255 registers per thread. It may only
-join the functional prototype after a skeleton demonstrates zero local-memory
-spills and preserves the measured batch-16 wave count.
+Per the predeclared rule that failure of any skeleton gate ends the study, do
+not implement this protocol in the attention kernel. Per-token remains an
+additional resource risk because the real partial specialization already uses
+255 registers per thread.
 
 ## Evidence matrix
 
@@ -133,20 +135,16 @@ should be negative: the 14--29% eliminate-merge bound is not practically
 recoverable without sacrificing resource shape or parallelism, and CUTLASS
 already covers the larger-batch regime.
 
-## Recommended next action
+## Final action
 
-Do not modify the production attention implementation. First write a one-page
-design note choosing exactly one cross-CTA protocol and calculate its CTA,
-cluster/cooperative-residency, shared-memory, and register-state requirements
-for these four mandatory shapes:
+Keep the production attention implementation unchanged. Record the negative
+fusion result and use the measured geometry-aware Triton/CUTLASS dispatch:
 
-- TP1 scalar, batch 1 / chunks 16;
-- TP1 per-token, batch 16 / chunks 4;
-- TP4 scalar, batch 1 / chunks 16;
-- TP4 per-token, batch 16 / chunks 16.
+- TP1 scalar: Triton below batch 16, CUTLASS from batch 16;
+- TP4 scalar: Triton below batch 64, CUTLASS from batch 64;
+- per-token: retain Triton until an equivalent CUTLASS control exists.
 
-Only after that arithmetic fits the resource gates should a resource-only
-skeleton be compiled.
-
-The first protocol analysis is recorded in
-`docs/fusion-last-producer-design.md`.
+The evaluated protocol and measurements are recorded in
+`docs/fusion-last-producer-design.md` and
+`docs/last-producer-skeleton-findings.md`. A materially different fusion
+protocol would require a new evidence review rather than extending this one.

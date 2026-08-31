@@ -2,7 +2,10 @@
 
 ## Status
 
-This is a paper/resource design, not a kernel implementation.
+This is a synthetic resource design, not an attention kernel implementation.
+It was evaluated at commit `e1682106c3de` and is now **rejected** because its
+reduction tail failed the mandatory latency gate. See
+`docs/last-producer-skeleton-findings.md`.
 
 The selected protocol preserves the current split-K producer grid and lets the
 last producer CTA for each `(query token, KV head)` perform the cross-chunk
@@ -112,11 +115,11 @@ than that launch recovery.
 | Per-token register feasibility | High risk | Starts at 255 registers/thread |
 | Graph-stable state | Conditional | Counter reset and stable address must be proven |
 
-The design is eligible only for a scalar resource-only skeleton. It is not
-eligible for a functional prototype, and per-token compilation is diagnostic
-only. If scalar compilation increases residency limits or a reduction-tail
-microbenchmark regresses TP4 batch 1 by more than 5%, reject this protocol and
-stop; do not extend it into the attention kernel.
+The resource-only skeleton has now been run. Synchronization and counter reset
+passed, but the reduction tail regressed the paired synthetic producer by far
+more than 5% and exceeded the real merge-recovery budget. This protocol is not
+eligible for a functional prototype. Do not extend it into the attention
+kernel.
 
 ## Skeleton questions
 
@@ -132,5 +135,7 @@ questions before any attention code is copied:
 5. Does resetting counters inside the last CTA remain correct across repeated
    CUDA Graph replays?
 
-Until all five are measured, the project remains no-go for a functional fused
-kernel.
+Questions 1, 4, and 5 were answered by the synthetic skeleton: acquire-release
+lowering and 1000 Graph resets passed, while reduction tail failed. Questions
+2 and 3 cannot rescue the protocol because its mandatory latency gate has
+already failed. The project remains no-go for a functional fused kernel.
