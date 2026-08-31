@@ -82,7 +82,9 @@ def main() -> None:
         raise RuntimeError("no graph/full rows found")
     args.output.parent.mkdir(parents=True, exist_ok=True)
     with args.output.open("w", newline="", encoding="utf-8") as stream:
-        writer = csv.DictWriter(stream, fieldnames=rows[0].keys())
+        writer = csv.DictWriter(
+            stream, fieldnames=rows[0].keys(), lineterminator="\n"
+        )
         writer.writeheader()
         writer.writerows(rows)
     for row in rows:
