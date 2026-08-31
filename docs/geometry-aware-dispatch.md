@@ -6,20 +6,28 @@ This is a project-owned policy proposal, not a modification to the pinned vLLM
 snapshot and not a production integration. Its implementation is in
 `kernels/cutlass_dispatch_policy.py`.
 
+**Superseded by effective-length evidence:** the current implementation and
+upstream patch encode geometry and batch only. The effective-KV-length sweep
+shows that those rules select CUTLASS incorrectly at 128 tokens. Do not use the
+implementation or patch as a production policy until a graph-stable length or
+valid-block signal is added. See `docs/cutlass-kvlen-crossover-findings.md`.
+
 ## Evidence-bounded policy
 
 For one-token decode with scalar FP8 KV scales on the measured NVIDIA B300:
 
-| Head geometry | Interpretation | Triton | CUTLASS |
-|---|---|---:|---:|
-| 64 query / 4 KV | TP1-like | batch < 16 | batch >= 16 |
-| 16 query / 1 KV | TP4-like | batch < 64 | batch >= 64 |
+| Head geometry | Interpretation | Triton | Measured CUTLASS region |
+|---|---|---|---|
+| 64 query / 4 KV | TP1-like | batch < 16 or effective KV < 512 | batch >= 16 and effective KV >= 512 |
+| 16 query / 1 KV | TP4-like | batch < 64 or effective KV < 512 | batch >= 64 and effective KV >= 512 |
 
-The thresholds come from ten independent Python processes per boundary shape.
-At the selected boundaries CUTLASS was 28.91% faster for TP1 batch 16 and
-28.94% faster for TP4 batch 64, with run CV below 0.26%. See
-`docs/cutlass-crossover-findings.md` and
-`results/raw/cutlass-boundary-noise-summary.csv`.
+The batch thresholds come from ten independent Python processes per boundary
+shape. A second 160-process sweep established that effective KV length changes
+the decision: at 128 tokens CUTLASS was 9.06% slower for TP1 batch 16 and
+30.89% slower for TP4 batch 64, while every tested length from 512 through 2048
+was a stable CUTLASS win at those cutoffs. See
+`docs/cutlass-crossover-findings.md`,
+`docs/cutlass-kvlen-crossover-findings.md`, and the corresponding raw summaries.
 
 The policy intentionally falls back to Triton for:
 
