@@ -49,8 +49,13 @@ This was checked directly at pinned vLLM commit `d4da0c5`:
 The minimal upstream change is to replace the common batch-16 cutoff with the
 exact-geometry threshold table. The
 [patch draft](../patches/vllm-d4da0c5-geometry-aware-cutlass-dispatch.patch)
-records that proposal without modifying `vendor/`. It is validated against the
-snapshot with:
+records that proposal without modifying `vendor/`. The geometry-aware rule is
+limited to one-token decode; speculative decode retains the pinned batch-16
+behavior because this project did not measure its crossover. A
+[companion test patch](../patches/vllm-d4da0c5-geometry-aware-cutlass-dispatch-tests.patch)
+covers that distinction.
+
+The source patch is validated against the snapshot with:
 
 ```bash
 git apply --check --unidiff-zero -p5 \

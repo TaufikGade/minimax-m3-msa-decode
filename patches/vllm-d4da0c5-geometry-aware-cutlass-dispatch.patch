@@ -11,17 +11,22 @@ repository's pinned vendor snapshot.
 diff --git a/vllm/models/minimax_m3/nvidia/msa_cutlass_sparse_decode.py b/vllm/models/minimax_m3/nvidia/msa_cutlass_sparse_decode.py
 --- a/vllm/models/minimax_m3/nvidia/msa_cutlass_sparse_decode.py
 +++ b/vllm/models/minimax_m3/nvidia/msa_cutlass_sparse_decode.py
-@@ -25,2 +25,3 @@
+@@ -25,2 +25,4 @@
 -# Kernel benchmarks put the CUTLASS crossover at 16 requests for TP1 and TP4.
 -_MIN_CUTLASS_BATCH_SIZE = 16
-+# Conservative B300 CUDA Graph thresholds. Unmeasured head geometries retain
-+# the Triton path instead of inheriting a GQA-ratio or common-batch heuristic.
++# Conservative B300 CUDA Graph thresholds for one-token decode. Preserve the
++# existing threshold for speculative decode shapes not measured in this study.
 +_MIN_CUTLASS_BATCH_SIZE = {(64, 4): 16, (16, 1): 64}
-@@ -238,16 +239,18 @@ def should_prepare_decode_metadata(
++_DEFAULT_MIN_CUTLASS_BATCH_SIZE = 16
+@@ -238,16 +240,22 @@ def should_prepare_decode_metadata(
  ) -> bool:
      """Return whether a graph shape can use the CUTLASS decode path."""
      total_q = batch_size * decode_query_len
-+    min_batch_size = _MIN_CUTLASS_BATCH_SIZE.get((num_q_heads, num_kv_heads))
++    min_batch_size = (
++        _MIN_CUTLASS_BATCH_SIZE.get((num_q_heads, num_kv_heads))
++        if decode_query_len == 1
++        else _DEFAULT_MIN_CUTLASS_BATCH_SIZE
++    )
      return (
          supports_cutlass_sparse_decode(
              decode_backend=decode_backend,

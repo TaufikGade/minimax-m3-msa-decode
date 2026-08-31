@@ -1,0 +1,29 @@
+From: MiniMax M3 MSA B300 crossover study
+Subject: [PATCH] tests: cover geometry-aware MSA CUTLASS decode dispatch
+
+Companion tests for the source patch. One-token decode follows measured TP1
+and TP4 thresholds, while speculative decode retains the pinned batch-16
+behavior. Per-token/head FP8 scales remain on Triton.
+
+diff --git a/tests/kernels/attention/test_minimax_m3_msa_cutlass_sparse_decode.py b/tests/kernels/attention/test_minimax_m3_msa_cutlass_sparse_decode.py
+--- a/tests/kernels/attention/test_minimax_m3_msa_cutlass_sparse_decode.py
++++ b/tests/kernels/attention/test_minimax_m3_msa_cutlass_sparse_decode.py
+@@ -66,7 +66,9 @@ DEFAULT_QUERY_LEN = 4
+         pytest.param(24, 4, 16, 1, True, id="tp4-intermediate-batch"),
+         pytest.param(32, 4, 16, 1, True, id="tp4-supported"),
+         pytest.param(16, 1, 64, 4, True, id="tp1-query-len-1"),
+-        pytest.param(16, 1, 16, 1, True, id="tp4-query-len-1"),
++        pytest.param(16, 1, 16, 1, False, id="tp4-query-len-1-below-min"),
++        pytest.param(64, 1, 16, 1, True, id="tp4-query-len-1-supported"),
++        pytest.param(128, 1, 32, 2, False, id="unmeasured-query-len-1"),
+         pytest.param(16, 2, 64, 4, True, id="tp1-query-len-2"),
+         pytest.param(16, 2, 16, 1, True, id="tp4-query-len-2"),
+         pytest.param(16, 32, 64, 4, True, id="query-len-upper-bound"),
+@@ -125,6 +127,6 @@ def test_msa_cutlass_decode_static_dispatch_accepts_fp8_alias() -> None:
+ @pytest.mark.parametrize(
+     "kv_cache_dtype",
+-    ["auto", "bfloat16", "float16", "fp8_e5m2"],
++    ["auto", "bfloat16", "float16", "fp8_e5m2", "fp8_per_token_head"],
+ )
+ def test_msa_cutlass_decode_static_dispatch_requires_fp8_e4m3(
+     kv_cache_dtype: str,
